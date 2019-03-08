@@ -1,0 +1,2 @@
+*/60 * * * * /usr/local/bin/raid_discovery.pl
+*/10 * * * * /usr/local/bin/raid_trapper_check.pl

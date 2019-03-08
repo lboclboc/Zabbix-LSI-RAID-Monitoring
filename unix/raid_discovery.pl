@@ -2,9 +2,10 @@
 
 use strict;
 use warnings;
+use POSIX;
 
 my $cli             = '/opt/MegaRAID/MegaCli/MegaCli64';
-my $zabbix_config   = '/etc/zabbix_agentd.conf';
+my $zabbix_config   = '/etc/zabbix/zabbix_agentd.conf';
 my $zabbix_sender   = '/usr/bin/zabbix_sender';
 my $tmp_path        = '/tmp/raid-discovery-zsend-data.tmp';
 my %enclosures      = ();
@@ -88,7 +89,7 @@ my $lds_count = keys %virtual_drives;
 
 if (($phd_count != 0) && ($lds_count != 0)) {
     my $i = 1;
-    print ZSEND_FILE "- hw.raid.discovery.pdisks { \"data\":[";
+    print ZSEND_FILE "px2csw10 hw.raid.discovery.pdisks { \"data\":[";
     foreach my $drive (keys %physical_drives) {
         if ($i < $phd_count) {
             print ZSEND_FILE "$physical_drives{$drive},";
@@ -98,7 +99,7 @@ if (($phd_count != 0) && ($lds_count != 0)) {
         }
     }
     $i = 1;
-    print ZSEND_FILE "- hw.raid.discovery.vdisks { \"data\":[";
+    print ZSEND_FILE "px2csw10 hw.raid.discovery.vdisks { \"data\":[";
     foreach my $vdrive (keys %virtual_drives) {
         if ($i < $lds_count) {
             print ZSEND_FILE "$virtual_drives{$vdrive},";
@@ -110,7 +111,7 @@ if (($phd_count != 0) && ($lds_count != 0)) {
     $i = 1;
     my $bbu_count = keys %battery_units;
     if ($bbu_count != 0) {
-        print ZSEND_FILE "- hw.raid.discovery.bbu { \"data\":[";
+        print ZSEND_FILE "px2csw10 hw.raid.discovery.bbu { \"data\":[";
             foreach my $bbu (keys %battery_units) {
                 if ($i < $bbu_count) {
                     print ZSEND_FILE "$battery_units{$bbu},";
@@ -123,7 +124,7 @@ if (($phd_count != 0) && ($lds_count != 0)) {
     $i = 1;
     my $adp_count = keys %adapters;
     if ($adp_count != 0) {
-        print ZSEND_FILE "- hw.raid.discovery.adapters { \"data\":[";
+        print ZSEND_FILE "px2csw10 hw.raid.discovery.adapters { \"data\":[";
         foreach my $adapter (keys %adapters) {
             if ($i < $adp_count) {
                 print ZSEND_FILE "$adapters{$adapter},";
@@ -136,5 +137,6 @@ if (($phd_count != 0) && ($lds_count != 0)) {
 }
 close (ZSEND_FILE) or die "Can't close $tmp_path: $!";
 
-my @cmd_args = ($zabbix_sender,'-c',$zabbix_config,'-i',$tmp_path);
+my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
+my @cmd_args = ($zabbix_sender,'-s', $nodename, '-c',$zabbix_config,'-i',$tmp_path);
 system(@cmd_args);

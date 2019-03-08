@@ -2,9 +2,10 @@
 
 use strict;
 use warnings;
+use POSIX;
 
-my $cli             = '/opt/MegaRAID/CmdTool2/CmdTool2';
-my $zabbix_config   = '/etc/zabbix_agentd.conf';
+my $cli             = '/opt/MegaRAID/MegaCli/MegaCli64';
+my $zabbix_config   = '/etc/zabbix/zabbix_agentd.conf';
 my $zabbix_sender   = '/usr/bin/zabbix_sender';
 my $tmp_path        = '/tmp/raid-discovery-zsend-trapper-data.tmp';
 my %enclosures      = ();
@@ -125,5 +126,7 @@ for (my $adapter = 0; $adapter < $adp_count; $adapter++) {
     close (ZSEND_FILE) or die "Can't close $tmp_path: $!";
 }
 
-my @cmd_args = ($zabbix_sender,'-c',$zabbix_config,'-i',$tmp_path);
+my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
+
+my @cmd_args = ($zabbix_sender,'-s', $nodename, '-c',$zabbix_config,'-i',$tmp_path);
 system(@cmd_args);
